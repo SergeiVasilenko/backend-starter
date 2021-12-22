@@ -1,0 +1,27 @@
+variables:
+  DOCKER_IMAGE_NAME: "backend-starter"
+  DOCKER_TAG: ${CI_COMMIT_REF_SLUG}
+  DOCKER_REPO: ${DOCKERHUB_USERNAME}
+
+stages:
+  - build
+  - deploy
+
+docker-build:
+  image: docker:19.03.12
+  service:
+    - docker:19.03.12-dind
+  before-login:
+    - docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_TOKEN}
+  stage: build
+  script:
+    # backend-starter:${DOCKER_TAG}
+    - docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+    - docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+    - docker run ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+    - docker push ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+    - echo "Image was succesfully pushed: " ${DOCKER_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+
+#mutli-stage-build:
+#  stage: build
+#  image: docker:19.03.12
